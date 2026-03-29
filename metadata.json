@@ -1,0 +1,5 @@
+{
+  "name": "LingoTek - AI Academic Advisor",
+  "description": "Premium scholarship matching and international admissions advisory platform powered by AI.",
+  "requestFramePermissions": ["geolocation"]
+}

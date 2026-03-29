@@ -1,0 +1,92 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-brand-cosmic: #0B0E2C;
+  --color-brand-deep: #05071A;
+  --color-brand-gold: #FFD700;
+  --color-brand-gold-muted: #B8860B;
+  --color-brand-accent: #7B61FF;
+  --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-brand-deep text-slate-100 antialiased transition-colors duration-300;
+    font-family: var(--font-sans);
+  }
+
+  body.light {
+    @apply bg-slate-50 text-slate-900;
+  }
+}
+
+.glass-card {
+  @apply bg-brand-cosmic/40 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl transition-all;
+}
+
+.light .glass-card {
+  @apply bg-white border-slate-200 shadow-xl;
+}
+
+.light .text-slate-400 {
+  @apply text-slate-600;
+}
+
+.light .text-white {
+  @apply text-slate-900;
+}
+
+.light .bg-brand-deep {
+  @apply bg-slate-100;
+}
+
+.light .bg-brand-cosmic\/20 {
+  @apply bg-slate-200/50;
+}
+
+.light .bg-brand-cosmic\/30 {
+  @apply bg-slate-200/80;
+}
+
+.light .bg-white\/5 {
+  @apply bg-slate-200;
+}
+
+.light .border-white\/10 {
+  @apply border-slate-300;
+}
+
+.light .cosmic-gradient {
+  @apply bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200;
+}
+
+.gold-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-gold via-yellow-200 to-brand-gold;
+}
+
+.cosmic-gradient {
+  @apply bg-gradient-to-br from-brand-cosmic via-brand-deep to-black;
+}
+
+.btn-gold {
+  @apply bg-brand-gold text-brand-deep font-black px-8 py-4 rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-lg shadow-brand-gold/20;
+}
+
+.rtl {
+  direction: rtl;
+}
+
+.ltr {
+  direction: ltr;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
