@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { GraduationCap, Globe, MessageCircle, ArrowRight, ShieldCheck, Zap, Search, Info, MapPin, Phone, Mail, Users, CheckCircle, Menu, X, Bot, Sparkles, Facebook, Twitter, Instagram, CheckCircle2 } from 'lucide-react';
-import AIChat from './components/AIChat';
+import { Globe, MessageCircle, ArrowRight, ShieldCheck, Info, MapPin, Phone, Mail, Users, Menu, X, Sparkles, Facebook, Send, MessageSquare } from 'lucide-react';
 import ScholarshipGrid from './components/ScholarshipGrid';
 import EligibilityQuiz from './components/EligibilityQuiz';
 import ServicesSection from './components/ServicesSection';
@@ -109,9 +108,6 @@ export default function App() {
                 <a href="#quiz" className="w-full sm:w-auto btn-gold text-base md:text-lg px-8 md:px-12 py-4 md:py-5">
                   ابدأ اختبار الأهلية
                 </a>
-                <a href="#advisor" className="w-full sm:w-auto border-2 border-brand-gold/30 text-brand-gold hover:bg-brand-gold/5 px-8 md:px-12 py-4 md:py-5 rounded-2xl font-black text-base md:text-lg transition-all">
-                  استشارة ذكية فورية
-                </a>
               </div>
             </motion.div>
           </div>
@@ -131,44 +127,6 @@ export default function App() {
 
         {/* Services Section */}
         <ServicesSection />
-
-        {/* Advisor Section */}
-        <section id="advisor" className="py-20 md:py-24 relative overflow-hidden">
-          <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_0%_50%,rgba(123,97,255,0.05),transparent)] pointer-events-none" />
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 md:gap-16 items-start">
-              <div className="lg:col-span-2 space-y-6 md:space-y-8 rtl text-center lg:text-right">
-                <div>
-                  <h2 className="text-3xl md:text-5xl font-black mb-4 md:mb-8 text-white">المستشار الأكاديمي <span className="text-brand-gold">الذكي</span></h2>
-                  <p className="text-slate-400 leading-relaxed font-medium text-lg md:text-xl">
-                    عندك أي سؤال عن المنح؟ اسأل مستشارنا الذكي وبوريك كل التفاصيل والفرص المتاحة ليك حالياً.
-                  </p>
-                </div>
-                
-                <div className="space-y-4 md:space-y-6">
-                  {[
-                    { icon: <Zap className="text-brand-gold" />, title: "دقة عالية", desc: "معلومات محدثة عن كافة المنح" },
-                    { icon: <CheckCircle className="text-brand-gold" />, title: "توجيه سوداني", desc: "فاهمين وضع الطالب السوداني وتحدياته" }
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-4 md:gap-5 p-5 md:p-6 rounded-3xl border bg-white/5 border-white/10 hover:border-brand-gold/30 transition-colors text-right">
-                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-brand-gold/10 flex items-center justify-center text-brand-gold shrink-0">
-                        {item.icon}
-                      </div>
-                      <div>
-                        <h4 className="font-black text-base md:text-lg text-white">{item.title}</h4>
-                        <p className="text-xs md:text-sm text-slate-400">{item.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="lg:col-span-3 h-[500px] md:h-[600px]">
-                <AIChat />
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* About Us Section */}
         <section id="about" className="py-20 md:py-24 relative overflow-hidden bg-brand-cosmic/30">
@@ -277,18 +235,36 @@ export default function App() {
               <h4 className="font-black text-lg text-white">اشترك في النشرة</h4>
               <p className="text-xs text-slate-500">احصل على أحدث المنح فور صدورها</p>
               <div className="flex gap-2">
-                <input type="email" placeholder="بريدك الإلكتروني" className="border rounded-xl px-4 py-2 text-sm w-full focus:outline-none focus:border-brand-gold bg-white/5 border-white/10 text-white" />
-                <button className="bg-brand-gold text-brand-deep p-2 rounded-xl"><ArrowRight className="w-5 h-5" /></button>
+                <input 
+                  type="email" 
+                  placeholder="بريدك الإلكتروني" 
+                  className="border rounded-xl px-4 py-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-brand-gold/50 bg-white/5 border-white/20 text-white transition-all" 
+                />
+                <button className="bg-brand-gold text-brand-deep p-3 rounded-xl hover:bg-yellow-400 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-brand-gold/20">
+                  <ArrowRight className="w-5 h-5" />
+                </button>
               </div>
             </div>
           </div>
 
           <div className="border-t border-white/5 pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
             <p className="text-slate-500 text-xs font-medium">© 2026 LingoTek للخدمات الأكاديمية - جميع الحقوق محفوظة</p>
-            <div className="flex gap-8">
-              <a href="#" className="text-slate-500 hover:text-white transition-colors"><Users className="w-5 h-5" /></a>
-              <a href="#" className="text-slate-500 hover:text-white transition-colors"><Globe className="w-5 h-5" /></a>
-              <a href="#" className="text-slate-500 hover:text-white transition-colors"><Info className="w-5 h-5" /></a>
+            <div className="flex flex-wrap justify-center gap-6">
+              <a href="https://www.facebook.com/profile.php?id=100089440483332&mibextid=kFxxJD" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-brand-gold transition-colors" title="فيسبوك">
+                <Facebook className="w-6 h-6" />
+              </a>
+              <a href="https://t.me/LingoTek" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-brand-gold transition-colors" title="تلغرام">
+                <Send className="w-6 h-6" />
+              </a>
+              <a href="https://whatsapp.com/channel/0029Vakd0piCnA7s2hnb6Y0i" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-brand-gold transition-colors" title="قناة الواتساب">
+                <MessageCircle className="w-6 h-6" />
+              </a>
+              <a href="https://chat.whatsapp.com/J7kr6m4NKE20wtMRRUkeeS" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-brand-gold transition-colors" title="قروب الواتساب 1">
+                <MessageSquare className="w-6 h-6" />
+              </a>
+              <a href="https://chat.whatsapp.com/L08thRYeDQ2EjtAErUyvPi" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-brand-gold transition-colors" title="قروب الواتساب 2">
+                <MessageSquare className="w-6 h-6" />
+              </a>
             </div>
           </div>
         </div>

@@ -33,27 +33,76 @@ const QUESTIONS: Question[] = [
     id: 3,
     text: "هل تمتلك شهادة لغة إنجليزية (IELTS/TOEFL)؟",
     options: [
-      { text: "نعم، جاهزة", score: 15 },
-      { text: "لا، لكن مستواي جيد", score: 10 },
-      { text: "لا، وأحتاج لتطوير لغتي", score: 5 },
+      { text: "نعم، جاهزة (6.5+)", score: 15 },
+      { text: "نعم، جاهزة (5.5 - 6.0)", score: 12 },
+      { text: "لا، لكن مستواي جيد", score: 8 },
+      { text: "لا، وأحتاج لتطوير لغتي", score: 3 },
     ]
   },
   {
     id: 4,
     text: "هل لديك جواز سفر ساري المفعول؟",
     options: [
-      { text: "نعم", score: 10 },
+      { text: "نعم، ساري", score: 10 },
       { text: "جاري الاستخراج", score: 7 },
-      { text: "لا", score: 0 },
+      { text: "لا، منتهي", score: 3 },
+      { text: "لا أملك جواز", score: 0 },
     ]
   },
   {
     id: 5,
-    text: "هل أنت مستعد للتقديم الآن؟",
+    text: "ما هو تخصصك الدراسي المفضل؟",
     options: [
-      { text: "نعم، فوراً", score: 10 },
-      { text: "خلال شهر", score: 8 },
-      { text: "أفكر فقط", score: 2 },
+      { text: "علوم طبية وصحية", score: 10 },
+      { text: "هندسة وتقنية معلومات", score: 10 },
+      { text: "إدارة واقتصاد", score: 8 },
+      { text: "علوم إنسانية ولغات", score: 8 },
+    ]
+  },
+  {
+    id: 6,
+    text: "هل لديك خبرات تطوعية أو أنشطة لاصفية؟",
+    options: [
+      { text: "نعم، مشاركات دولية ومحلية", score: 15 },
+      { text: "نعم، مشاركات محلية بسيطة", score: 10 },
+      { text: "لا، أركز على الدراسة فقط", score: 5 },
+    ]
+  },
+  {
+    id: 7,
+    text: "هل لديك أبحاث منشورة أو مشاريع مميزة؟",
+    options: [
+      { text: "نعم، بحث منشور دولياً", score: 15 },
+      { text: "نعم، مشروع تخرج متميز", score: 10 },
+      { text: "لا، ليس بعد", score: 5 },
+    ]
+  },
+  {
+    id: 8,
+    text: "ما هي وجهتك الدراسية المفضلة؟",
+    options: [
+      { text: "أوروبا (ألمانيا، رومانيا، هنغاريا)", score: 10 },
+      { text: "آسيا (الصين، ماليزيا، الهند)", score: 10 },
+      { text: "أمريكا الشمالية / أستراليا", score: 12 },
+      { text: "لا يهم، أبحث عن أي فرصة", score: 8 },
+    ]
+  },
+  {
+    id: 9,
+    text: "هل لديك القدرة على تغطية تكاليف السفر؟",
+    options: [
+      { text: "نعم، بالكامل", score: 10 },
+      { text: "نعم، جزئياً", score: 7 },
+      { text: "لا، أبحث عن منحة ممولة بالكامل", score: 5 },
+    ]
+  },
+  {
+    id: 10,
+    text: "هل أنت مستعد للبدء في تجهيز الأوراق الآن؟",
+    options: [
+      { text: "نعم، فوراً وبكل جدية", score: 10 },
+      { text: "خلال الأسابيع القادمة", score: 8 },
+      { text: "ما زلت أستكشف الخيارات", score: 2 },
     ]
   }
 ];
@@ -62,36 +111,61 @@ export default function EligibilityQuiz() {
   const [currentStep, setCurrentStep] = useState(0);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [answers, setAnswers] = useState<number[]>([]);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
-  const handleOptionSelect = (optionScore: number) => {
-    const nextScore = score + optionScore;
-    setScore(nextScore);
+  const handleOptionSelect = (optionIndex: number, optionScore: number) => {
+    if (isTransitioning) return;
     
-    if (currentStep < QUESTIONS.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      setShowResult(true);
-    }
+    setSelectedOption(optionIndex);
+    setIsTransitioning(true);
+
+    // Small delay for visual feedback
+    setTimeout(() => {
+      const nextAnswers = [...answers];
+      nextAnswers[currentStep] = optionScore;
+      setAnswers(nextAnswers);
+      
+      if (currentStep < QUESTIONS.length - 1) {
+        setCurrentStep(currentStep + 1);
+        setSelectedOption(null);
+        setIsTransitioning(false);
+      } else {
+        const finalScore = nextAnswers.reduce((acc, curr) => acc + curr, 0);
+        setScore(finalScore);
+        setShowResult(true);
+        setIsTransitioning(false);
+      }
+    }, 600);
   };
 
   const getResult = () => {
-    if (score >= 55) return {
-      title: "فرصتك ذهبية يا بطل! 🌟",
-      desc: "أنت مرشح مثالي للمنح الدراسية. ملفك قوي جداً و'زابط'. ننصحك بالتقديم فوراً لضمان مقعدك قبل ما يطير.",
+    const percentage = (score / 137) * 100; // Max score is around 137
+    
+    if (percentage >= 80) return {
+      title: "أنت نجم ساطع! 🌟",
+      desc: "ملفك الأكاديمي والشخصي مذهل. أنت تمتلك كل المقومات للمنافسة على أقوى المنح العالمية الممولة بالكامل. فرص قبولك تتجاوز الـ 90%.",
       color: "text-brand-gold",
-      recommendations: ["منحة الحكومة الهندية (ICCR)", "منحة جامعة ترانسلفانيا", "منحة الحكومة الماليزية (MIS)"]
+      recommendations: ["منحة الحكومة الهندية (ICCR)", "منحة جامعة ترانسلفانيا", "منحة الحكومة الماليزية (MIS)", "منحة الحكومة الهنغارية (Stipendium Hungaricum)"]
     };
-    if (score >= 40) return {
+    if (percentage >= 60) return {
       title: "فرصة قوية جداً! ✅",
-      desc: "لديك فرصة كبيرة للقبول. نحتاج فقط لتجهيز ملفاتك باحترافية لرفع نسبة قبولك. 'ما تشيل هم' الإجراءات علينا.",
+      desc: "لديك ملف جيد جداً وقابل للتطوير. ببعض التعديلات الاحترافية على السيرة الذاتية وخطاب النوايا، ستكون منافساً شرساً. 'ما تشيل هم' نحن بنظبط ليك الورق.",
       color: "text-green-400",
-      recommendations: ["منحة جامعة بخاري", "منحة الحكومة الرومانية"]
+      recommendations: ["منحة جامعة بخاري", "منحة الحكومة الرومانية", "منحة الحكومة الصينية (CSC)"]
+    };
+    if (percentage >= 40) return {
+      title: "بداية جيدة، ونحتاج لعمل! ⏳",
+      desc: "لديك الأساسيات، لكن نحتاج للعمل على تقوية بعض الجوانب مثل اللغة أو الأنشطة التطوعية. لا تقلق، لدينا خطط تطويرية مخصصة لك.",
+      color: "text-yellow-400",
+      recommendations: ["منحة الحكومة الرومانية", "منح الجامعات الخاصة في ماليزيا"]
     };
     return {
-      title: "تحتاج لبعض التجهيز ⏳",
-      desc: "فرصتك موجودة، لكن نحتاج للعمل على تقوية ملفك الأكاديمي واللغوي قبل التقديم. 'زبط أمورك' معنا وبنوريك الطريق.",
-      color: "text-yellow-400",
-      recommendations: ["منحة الحكومة الرومانية"]
+      title: "تحتاج لبناء ملفك 🛠️",
+      desc: "حالياً ملفك يحتاج للكثير من العمل ليكون مقبولاً في المنح التنافسية. ننصحك بالبدء في دورات لغة وتطوير مهاراتك. تواصل معنا لنضع لك خارطة طريق.",
+      color: "text-red-400",
+      recommendations: ["كورسات لغة إنجليزية مكثفة", "برامج تدريبية وتطوعية"]
     };
   };
 
@@ -119,7 +193,17 @@ export default function EligibilityQuiz() {
               className="space-y-8"
             >
               <div className="flex justify-between items-center">
-                <span className="text-brand-gold font-bold text-sm">السؤال {currentStep + 1} من {QUESTIONS.length}</span>
+                <div className="flex items-center gap-4">
+                  {currentStep > 0 && (
+                    <button 
+                      onClick={() => setCurrentStep(currentStep - 1)}
+                      className="p-2 rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-brand-gold hover:border-brand-gold/50 transition-all"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  )}
+                  <span className="text-brand-gold font-bold text-sm">السؤال {currentStep + 1} من {QUESTIONS.length}</span>
+                </div>
                 <Sparkles className="text-brand-gold w-5 h-5 animate-pulse" />
               </div>
 
@@ -129,16 +213,44 @@ export default function EligibilityQuiz() {
 
               <div className="grid grid-cols-1 gap-4">
                 {QUESTIONS[currentStep].options.map((opt, i) => (
-                  <button
+                  <motion.button
                     key={i}
-                    onClick={() => handleOptionSelect(opt.score)}
-                    className="group flex items-center justify-between p-5 rounded-2xl bg-white/5 border border-white/10 hover:border-brand-gold/50 hover:bg-brand-gold/5 transition-all text-right"
+                    whileHover={!isTransitioning ? { scale: 1.02 } : {}}
+                    whileTap={!isTransitioning ? { scale: 0.98 } : {}}
+                    onClick={() => handleOptionSelect(i, opt.score)}
+                    disabled={isTransitioning}
+                    className={`group flex items-center justify-between p-5 rounded-2xl border transition-all text-right ${
+                      selectedOption === i 
+                        ? 'border-brand-gold bg-brand-gold/10 shadow-[0_0_15px_rgba(255,215,0,0.2)]' 
+                        : 'bg-white/5 border-white/10 hover:border-brand-gold/50 hover:bg-brand-gold/5'
+                    } ${isTransitioning && selectedOption !== i ? 'opacity-50 grayscale-[0.5]' : ''}`}
                   >
-                    <span className="text-lg font-bold text-slate-200 group-hover:text-brand-gold">{opt.text}</span>
-                    <div className="w-6 h-6 rounded-full border-2 border-white/20 group-hover:border-brand-gold flex items-center justify-center">
-                      <div className="w-2 h-2 rounded-full bg-brand-gold opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="flex items-center gap-3">
+                      <AnimatePresence>
+                        {selectedOption === i && (
+                          <motion.div
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="text-brand-gold"
+                          >
+                            <CheckCircle2 className="w-5 h-5" />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                      <span className={`text-lg font-bold transition-colors ${
+                        selectedOption === i ? 'text-brand-gold' : 'text-slate-200 group-hover:text-brand-gold'
+                      }`}>
+                        {opt.text}
+                      </span>
                     </div>
-                  </button>
+                    <div className={`w-6 h-6 rounded-full border-2 transition-all flex items-center justify-center ${
+                      selectedOption === i ? 'border-brand-gold' : 'border-white/20 group-hover:border-brand-gold'
+                    }`}>
+                      <div className={`w-2 h-2 rounded-full bg-brand-gold transition-all ${
+                        selectedOption === i ? 'opacity-100 scale-100' : 'opacity-0 scale-0 group-hover:opacity-100 group-hover:scale-100'
+                      }`} />
+                    </div>
+                  </motion.button>
                 ))}
               </div>
             </motion.div>
@@ -185,7 +297,7 @@ export default function EligibilityQuiz() {
               </div>
               
               <button 
-                onClick={() => { setCurrentStep(0); setScore(0); setShowResult(false); }}
+                onClick={() => { setCurrentStep(0); setScore(0); setAnswers([]); setShowResult(false); }}
                 className="text-slate-500 text-sm hover:text-brand-gold transition-colors"
               >
                 إعادة الاختبار
