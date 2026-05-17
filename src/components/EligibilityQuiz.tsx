@@ -1,173 +1,174 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CheckCircle2, AlertCircle, ArrowLeft, ArrowRight, Trophy, Sparkles } from 'lucide-react';
+import { useAuth } from './AuthContext';
+import { saveQuizResult } from '../firebase';
+
+import { SCHOLARSHIPS } from '../data/scholarships';
 
 interface Question {
   id: number;
   text: string;
-  options: { text: string; score: number }[];
+  field: string;
+  options: { text: string; score: number; value: any }[];
 }
 
 const QUESTIONS: Question[] = [
   {
     id: 1,
     text: "ما هو مستواك الأكاديمي الحالي؟",
+    field: "level",
     options: [
-      { text: "خريج ثانوي", score: 10 },
-      { text: "طالب جامعي", score: 8 },
-      { text: "خريج بكالوريوس", score: 10 },
-      { text: "خريج ماجستير", score: 10 },
+      { text: "خريج ثانوي", score: 10, value: "Bachelor" },
+      { text: "طالب جامعي", score: 8, value: "Bachelor" },
+      { text: "خريج بكالوريوس", score: 10, value: "Master" },
+      { text: "خريج ماجستير", score: 10, value: "PhD" },
     ]
   },
   {
     id: 2,
     text: "كم هو معدلك التراكمي (GPA) أو نسبتك المئوية؟",
+    field: "gpa",
     options: [
-      { text: "أكثر من 90% (ممتاز)", score: 20 },
-      { text: "80% - 90% (جيد جداً)", score: 15 },
-      { text: "70% - 80% (جيد)", score: 10 },
-      { text: "أقل من 70%", score: 5 },
+      { text: "أكثر من 90% (ممتاز)", score: 25, value: 3.7 },
+      { text: "80% - 90% (جيد جداً)", score: 15, value: 3.0 },
+      { text: "70% - 80% (جيد)", score: 10, value: 2.5 },
+      { text: "أقل من 70%", score: 5, value: 2.0 },
     ]
   },
   {
     id: 3,
-    text: "هل تمتلك شهادة لغة إنجليزية (IELTS/TOEFL)؟",
+    text: "ما هو جنسك؟ (بعض المنح مخصصة لفئات معينة)",
+    field: "gender",
     options: [
-      { text: "نعم، جاهزة (6.5+)", score: 15 },
-      { text: "نعم، جاهزة (5.5 - 6.0)", score: 12 },
-      { text: "لا، لكن مستواي جيد", score: 8 },
-      { text: "لا، وأحتاج لتطوير لغتي", score: 3 },
+      { text: "ذكر", score: 10, value: "male" },
+      { text: "أنثى", score: 10, value: "female" },
     ]
   },
   {
     id: 4,
-    text: "هل لديك جواز سفر ساري المفعول؟",
+    text: "هل تمتلك شهادة لغة إنجليزية (IELTS/TOEFL)؟",
+    field: "language",
     options: [
-      { text: "نعم، ساري", score: 10 },
-      { text: "جاري الاستخراج", score: 7 },
-      { text: "لا، منتهي", score: 3 },
-      { text: "لا أملك جواز", score: 0 },
+      { text: "نعم، جاهزة (6.5+)", score: 20, value: "expert" },
+      { text: "نعم، جاهزة (5.5 - 6.0)", score: 15, value: "intermediate" },
+      { text: "لا، لكن مستواي جيد", score: 10, value: "basic" },
+      { text: "لا، وأحتاج لتطوير لغتي", score: 5, value: "none" },
     ]
   },
   {
     id: 5,
-    text: "ما هو تخصصك الدراسي المفضل؟",
+    text: "هل لديك جواز سفر ساري المفعول؟",
+    field: "passport",
     options: [
-      { text: "علوم طبية وصحية", score: 10 },
-      { text: "هندسة وتقنية معلومات", score: 10 },
-      { text: "إدارة واقتصاد", score: 8 },
-      { text: "علوم إنسانية ولغات", score: 8 },
+      { text: "نعم، ساري", score: 10, value: true },
+      { text: "جاري الاستخراج", score: 7, value: false },
+      { text: "لا، منتهي", score: 3, value: false },
+      { text: "لا أملك جواز", score: 0, value: false },
     ]
   },
   {
     id: 6,
-    text: "هل لديك خبرات تطوعية أو أنشطة لاصفية؟",
-    options: [
-      { text: "نعم، مشاركات دولية ومحلية", score: 15 },
-      { text: "نعم، مشاركات محلية بسيطة", score: 10 },
-      { text: "لا، أركز على الدراسة فقط", score: 5 },
-    ]
-  },
-  {
-    id: 7,
-    text: "هل لديك أبحاث منشورة أو مشاريع مميزة؟",
-    options: [
-      { text: "نعم، بحث منشور دولياً", score: 15 },
-      { text: "نعم، مشروع تخرج متميز", score: 10 },
-      { text: "لا، ليس بعد", score: 5 },
-    ]
-  },
-  {
-    id: 8,
-    text: "ما هي وجهتك الدراسية المفضلة؟",
-    options: [
-      { text: "أوروبا (ألمانيا، رومانيا، هنغاريا)", score: 10 },
-      { text: "آسيا (الصين، ماليزيا، الهند)", score: 10 },
-      { text: "أمريكا الشمالية / أستراليا", score: 12 },
-      { text: "لا يهم، أبحث عن أي فرصة", score: 8 },
-    ]
-  },
-  {
-    id: 9,
     text: "هل لديك القدرة على تغطية تكاليف السفر؟",
+    field: "budget",
     options: [
-      { text: "نعم، بالكامل", score: 10 },
-      { text: "نعم، جزئياً", score: 7 },
-      { text: "لا، أبحث عن منحة ممولة بالكامل", score: 5 },
-    ]
-  },
-  {
-    id: 10,
-    text: "هل أنت مستعد للبدء في تجهيز الأوراق الآن؟",
-    options: [
-      { text: "نعم، فوراً وبكل جدية", score: 10 },
-      { text: "خلال الأسابيع القادمة", score: 8 },
-      { text: "ما زلت أستكشف الخيارات", score: 2 },
+      { text: "نعم، بالكامل", score: 10, value: "full" },
+      { text: "نعم، جزئياً", score: 7, value: "partial" },
+      { text: "لا، أبحث عن منحة ممولة بالكامل", score: 5, value: "none" },
     ]
   }
 ];
 
 export default function EligibilityQuiz() {
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
-  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [answers, setAnswers] = useState<number[]>([]);
+  const [userAnswers, setUserAnswers] = useState<Record<string, any>>({});
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
-  const handleOptionSelect = (optionIndex: number, optionScore: number) => {
+  const handleOptionSelect = (optionIndex: number, optionScore: number, optionValue: any) => {
     if (isTransitioning) return;
     
     setSelectedOption(optionIndex);
     setIsTransitioning(true);
 
-    // Small delay for visual feedback
-    setTimeout(() => {
-      const nextAnswers = [...answers];
-      nextAnswers[currentStep] = optionScore;
-      setAnswers(nextAnswers);
-      
+    const field = QUESTIONS[currentStep].field;
+    const nextAnswers = { ...userAnswers, [field]: optionValue, [`${field}_score`]: optionScore };
+    setUserAnswers(nextAnswers);
+
+    setTimeout(async () => {
       if (currentStep < QUESTIONS.length - 1) {
         setCurrentStep(currentStep + 1);
         setSelectedOption(null);
         setIsTransitioning(false);
       } else {
-        const finalScore = nextAnswers.reduce((acc, curr) => acc + curr, 0);
-        setScore(finalScore);
+        const totalScore = Object.keys(nextAnswers)
+          .filter(key => key.endsWith('_score'))
+          .reduce((sum, key) => sum + nextAnswers[key], 0);
+        
+        setFinalScore(totalScore);
         setShowResult(true);
         setIsTransitioning(false);
+
+        if (user) {
+          setIsSaving(true);
+          try {
+            await saveQuizResult(user.uid, {
+              score: totalScore,
+              answers: nextAnswers,
+              recommendations: getResult(totalScore).recommendations.map(r => r.title)
+            });
+          } catch (error) {
+            console.error("Failed to save quiz result:", error);
+          } finally {
+            setIsSaving(false);
+          }
+        }
       }
     }, 600);
   };
 
-  const getResult = () => {
-    const percentage = (score / 137) * 100; // Max score is around 137
+  const getResult = (scoreValue?: number) => {
+    const currentScore = scoreValue !== undefined ? scoreValue : finalScore;
+    const maxScore = QUESTIONS.reduce((acc, q) => acc + Math.max(...q.options.map(o => o.score)), 0);
+    const percentage = (currentScore / maxScore) * 100;
     
+    // Logic for recommendation
+    const recommended = SCHOLARSHIPS.filter(scholarship => {
+      // Basic matching logic
+      if (userAnswers.gender !== 'female' && scholarship.title.includes('خزر')) return false;
+      if (userAnswers.gpa < 3.7 && scholarship.title.includes('خزر')) return false;
+      if (userAnswers.level === 'Bachelor' && scholarship.level.includes('Master') && !scholarship.level.includes('Bachelor')) return false;
+      return true;
+    }).slice(0, 3);
+
     if (percentage >= 80) return {
       title: "أنت نجم ساطع! 🌟",
-      desc: "ملفك الأكاديمي والشخصي مذهل. أنت تمتلك كل المقومات للمنافسة على أقوى المنح العالمية الممولة بالكامل. فرص قبولك تتجاوز الـ 90%.",
+      desc: "ملفك الأكاديمي والشخصي مذهل. أنت تمتلك كل المقومات للمنافسة على أقوى المنح العالمية الممولة بالكامل.",
       color: "text-brand-gold",
-      recommendations: ["منحة الحكومة الهندية (ICCR)", "منحة جامعة ترانسلفانيا", "منحة الحكومة الماليزية (MIS)", "منحة الحكومة الهنغارية (Stipendium Hungaricum)"]
+      recommendations: recommended.length > 0 ? recommended : SCHOLARSHIPS.slice(0, 3)
     };
     if (percentage >= 60) return {
       title: "فرصة قوية جداً! ✅",
-      desc: "لديك ملف جيد جداً وقابل للتطوير. ببعض التعديلات الاحترافية على السيرة الذاتية وخطاب النوايا، ستكون منافساً شرساً. 'ما تشيل هم' نحن بنظبط ليك الورق.",
+      desc: "لديك ملف جيد جداً وقابل للتطوير. ببعض التعديلات الاحترافية، ستكون منافساً شرساً.",
       color: "text-green-400",
-      recommendations: ["منحة جامعة بخاري", "منحة الحكومة الرومانية", "منحة الحكومة الصينية (CSC)"]
-    };
-    if (percentage >= 40) return {
-      title: "بداية جيدة، ونحتاج لعمل! ⏳",
-      desc: "لديك الأساسيات، لكن نحتاج للعمل على تقوية بعض الجوانب مثل اللغة أو الأنشطة التطوعية. لا تقلق، لدينا خطط تطويرية مخصصة لك.",
-      color: "text-yellow-400",
-      recommendations: ["منحة الحكومة الرومانية", "منح الجامعات الخاصة في ماليزيا"]
+      recommendations: recommended.length > 0 ? recommended : SCHOLARSHIPS.slice(0, 2)
     };
     return {
-      title: "تحتاج لبناء ملفك 🛠️",
-      desc: "حالياً ملفك يحتاج للكثير من العمل ليكون مقبولاً في المنح التنافسية. ننصحك بالبدء في دورات لغة وتطوير مهاراتك. تواصل معنا لنضع لك خارطة طريق.",
-      color: "text-red-400",
-      recommendations: ["كورسات لغة إنجليزية مكثفة", "برامج تدريبية وتطوعية"]
+      title: "نحتاج للعمل على ملفك ⏳",
+      desc: "ملفك يحتاج لبعض التطوير في جوانب اللغة أو المعدل أو الأنشطة. تواصل معنا لنضع لك خارطة طريق.",
+      color: "text-yellow-400",
+      recommendations: SCHOLARSHIPS.filter(s => s.country === 'ماليزيا' || s.country === 'العراق')
     };
   };
+
+  const result = getResult();
+  const whatsappMsg = encodeURIComponent(`السلام عليكم، لقد أكملت اختبار الأهلية في موقع لينجوتك وحصلت على نتيجة ${Math.round((finalScore / 85) * 100)}%.
+أريد مناقشة المنح المرشحة لي وهي: ${result.recommendations.map(r => r.title).join('، ')}.
+هل يمكنكم مساعدتي في بدء التجهيز؟`);
 
   return (
     <div className="max-w-3xl mx-auto py-12 px-4 rtl">
@@ -217,7 +218,7 @@ export default function EligibilityQuiz() {
                     key={i}
                     whileHover={!isTransitioning ? { scale: 1.02 } : {}}
                     whileTap={!isTransitioning ? { scale: 0.98 } : {}}
-                    onClick={() => handleOptionSelect(i, opt.score)}
+                    onClick={() => handleOptionSelect(i, opt.score, opt.value)}
                     disabled={isTransitioning}
                     className={`group flex items-center justify-between p-5 rounded-2xl border transition-all text-right ${
                       selectedOption === i 
@@ -265,29 +266,32 @@ export default function EligibilityQuiz() {
               </div>
 
               <div className="space-y-4">
-                <h2 className={`text-3xl md:text-4xl font-black ${getResult().color}`}>
-                  {getResult().title}
+                <h2 className={`text-3xl md:text-4xl font-black ${result.color}`}>
+                  {result.title}
                 </h2>
                 <p className="text-slate-400 text-lg leading-relaxed max-w-md mx-auto">
-                  {getResult().desc}
+                  {result.desc}
                 </p>
               </div>
 
               <div className="space-y-4 pt-4">
                 <h4 className="text-white font-bold">المنح المرشحة لك:</h4>
                 <div className="flex flex-wrap justify-center gap-3">
-                  {getResult().recommendations.map((rec, i) => (
+                  {result.recommendations.map((rec, i) => (
                     <span key={i} className="px-4 py-2 rounded-xl bg-brand-gold/10 text-brand-gold border border-brand-gold/20 text-sm font-bold">
-                      {rec}
+                      {rec.title}
                     </span>
                   ))}
                 </div>
               </div>
 
               <div className="pt-8 border-t border-white/10">
+                {!user && (
+                  <p className="text-slate-400 text-sm mb-4">سجل دخولك لحفظ هذه النتيجة في ملفك الشخصي</p>
+                )}
                 <p className="text-brand-gold font-bold mb-6">تواصل معنا الآن لتحليل ملفك مجاناً وبدء التقديم</p>
                 <a 
-                  href="https://wa.me/249117734901" 
+                  href={`https://wa.me/249117734901?text=${whatsappMsg}`} 
                   target="_blank"
                   className="btn-gold inline-flex items-center gap-3"
                 >
@@ -297,7 +301,7 @@ export default function EligibilityQuiz() {
               </div>
               
               <button 
-                onClick={() => { setCurrentStep(0); setScore(0); setAnswers([]); setShowResult(false); }}
+                onClick={() => { setCurrentStep(0); setFinalScore(0); setUserAnswers({}); setShowResult(false); }}
                 className="text-slate-500 text-sm hover:text-brand-gold transition-colors"
               >
                 إعادة الاختبار

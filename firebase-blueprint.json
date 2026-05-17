@@ -1,0 +1,93 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Stores student profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique user ID from Firebase Auth" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "QuizResult": {
+      "title": "QuizResult",
+      "description": "Stores results from the eligibility quiz",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "score": { "type": "number" },
+        "percentage": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "recommendations": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["uid", "score", "percentage", "timestamp"]
+    },
+    "SavedScholarship": {
+      "title": "SavedScholarship",
+      "description": "Scholarships saved by the student",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "scholarshipId": { "type": "string" },
+        "scholarshipTitle": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "scholarshipId", "timestamp"]
+    },
+    "UserDocument": {
+      "title": "UserDocument",
+      "description": "Documents uploaded by the student",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "fileName": { "type": "string" },
+        "fileUrl": { "type": "string" },
+        "fileType": { "type": "string" },
+        "uploadDate": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "fileName", "fileUrl", "uploadDate"]
+    },
+    "Scholarship": {
+      "title": "Scholarship",
+      "description": "Scholarship information",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "country": { "type": "string" },
+        "level": { "type": "string" },
+        "deadline": { "type": "string" },
+        "coverage": { "type": "string" },
+        "type": { "type": "string" },
+        "description": { "type": "string" },
+        "requirements": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["title", "country", "deadline", "coverage"]
+    }
+  },
+  "firestore": {
+    "/scholarships/{scholarshipId}": {
+      "schema": "Scholarship",
+      "description": "Public list of scholarships"
+    },
+    "/users/{uid}": {
+      "schema": "UserProfile",
+      "description": "User profile document"
+    },
+    "/users/{uid}/quizResults/{resultId}": {
+      "schema": "QuizResult",
+      "description": "History of quiz attempts"
+    },
+    "/users/{uid}/savedScholarships/{scholarshipId}": {
+      "schema": "SavedScholarship",
+      "description": "List of saved scholarships"
+    },
+    "/users/{uid}/documents/{docId}": {
+      "schema": "UserDocument",
+      "description": "Uploaded application documents"
+    }
+  }
+}

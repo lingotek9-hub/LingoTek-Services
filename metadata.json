@@ -1,5 +1,6 @@
 {
   "name": "LingoTek - AI Academic Advisor",
   "description": "Premium scholarship matching and international admissions advisory platform powered by AI.",
-  "requestFramePermissions": ["geolocation"]
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

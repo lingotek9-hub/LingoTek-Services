@@ -1,0 +1,127 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: /users/{uid}
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required)
+    //   - displayName: string
+    //   - photoURL: string
+    //   - createdAt: timestamp (required)
+    //
+    // Collection: /users/{uid}/quizResults/{resultId}
+    // Fields:
+    //   - uid: string (required)
+    //   - score: number (required)
+    //   - percentage: number (required)
+    //   - timestamp: timestamp (required)
+    //   - recommendations: list (required)
+    //
+    // Collection: /users/{uid}/savedScholarships/{scholarshipId}
+    // Fields:
+    //   - uid: string (required)
+    //   - scholarshipId: string (required)
+    //   - scholarshipTitle: string (required)
+    //   - timestamp: timestamp (required)
+    //
+    // Collection: /users/{uid}/documents/{docId}
+    // Fields:
+    //   - uid: string (required)
+    //   - fileName: string (required)
+    //   - fileUrl: string (required)
+    //   - fileType: string
+    //   - uploadDate: timestamp (required)
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "omarfathialitaha@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email']) &&
+             data.uid is string &&
+             data.email is string &&
+             data.email.size() < 100;
+    }
+
+    function isValidQuizResult(data) {
+      return data.keys().hasAll(['score', 'percentage', 'timestamp']) &&
+             data.score is number &&
+             data.percentage is number &&
+             data.timestamp is timestamp;
+    }
+
+    function isValidSavedScholarship(data) {
+      return data.keys().hasAll(['scholarshipId', 'scholarshipTitle', 'timestamp']) &&
+             data.scholarshipId is string &&
+             data.scholarshipTitle is string &&
+             data.timestamp is timestamp;
+    }
+
+    function isValidDocument(data) {
+      return data.keys().hasAll(['fileName', 'fileUrl', 'uploadDate']) &&
+             data.fileName is string &&
+             data.fileUrl is string &&
+             data.uploadDate is timestamp;
+    }
+
+    function isValidScholarship(data) {
+      return data.keys().hasAll(['title', 'country', 'deadline', 'coverage']) &&
+             data.title is string &&
+             data.country is string &&
+             data.deadline is string &&
+             data.coverage is string;
+    }
+
+    // Rules
+    match /scholarships/{scholarshipId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create: if isOwner(uid) && isValidUser(request.resource.data);
+      allow update: if isOwner(uid) && isValidUser(request.resource.data);
+      allow delete: if isAdmin();
+
+      match /quizResults/{resultId} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow create: if isOwner(uid) && isValidQuizResult(request.resource.data);
+        allow update: if isOwner(uid) && isValidQuizResult(request.resource.data);
+        allow delete: if isOwner(uid) || isAdmin();
+      }
+
+      match /savedScholarships/{scholarshipId} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow create: if isOwner(uid) && isValidSavedScholarship(request.resource.data);
+        allow update: if isOwner(uid) && isValidSavedScholarship(request.resource.data);
+        allow delete: if isOwner(uid) || isAdmin();
+      }
+
+      match /documents/{docId} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow create: if isOwner(uid) && isValidDocument(request.resource.data);
+        allow update: if isOwner(uid) && isValidDocument(request.resource.data);
+        allow delete: if isOwner(uid) || isAdmin();
+      }
+    }
+  }
+}

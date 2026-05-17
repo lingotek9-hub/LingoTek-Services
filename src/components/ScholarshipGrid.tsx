@@ -1,72 +1,105 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { GraduationCap, Globe, Award, Calendar, ExternalLink, ChevronRight, X, CheckCircle, Info } from 'lucide-react';
+import { GraduationCap, Globe, Award, Calendar, ExternalLink, ChevronRight, X, CheckCircle, Info, Bookmark, BookmarkCheck } from 'lucide-react';
+import { useAuth } from './AuthContext';
+import { saveScholarship, deleteSavedScholarship, db, getScholarships } from '../firebase';
+import { doc, onSnapshot, collection, addDoc, getDocs } from 'firebase/firestore';
 
-const MOCK_SCHOLARSHIPS = [
-  {
-    id: '1',
-    title: 'منحة الحكومة الهندية (ICCR)',
-    country: 'الهند',
-    level: 'Bachelor, Master, PhD',
-    deadline: '30 April 2026',
-    coverage: 'Fully Funded',
-    icon: <Globe className="w-5 h-5" />,
-    description: 'تعتبر منحة المجلس الهندي للعلاقات الثقافية (ICCR) واحدة من أرقى المنح الدراسية التي تقدمها الحكومة الهندية للطلاب الدوليين. تغطي المنحة الرسوم الدراسية بالكامل، وبدل معيشة شهري، وتأمين صحي، وتذاكر طيران.',
-    requirements: ['شهادة الثانوية أو البكالوريوس بنسبة لا تقل عن 70%', 'إتقان اللغة الإنجليزية', 'جواز سفر ساري المفعول', 'خطاب غرض من الدراسة قوي']
-  },
-  {
-    id: '2',
-    title: 'منحة جامعة ترانسلفانيا',
-    country: 'رومانيا',
-    level: 'Bachelor, Master, PhD',
-    deadline: '27 April 2026',
-    coverage: 'Fully Funded',
-    icon: <Award className="w-5 h-5" />,
-    description: 'منحة جامعة ترانسلفانيا في رومانيا هي فرصة ممتازة للطلاب المتميزين من خارج الاتحاد الأوروبي. تهدف المنحة إلى استقطاب أفضل العقول للدراسة في واحدة من أعرق الجامعات الرومانية.',
-    requirements: ['سجل أكاديمي متميز', 'إجادة اللغة الإنجليزية أو الرومانية', 'خطابات توصية', 'السيرة الذاتية']
-  },
-  {
-    id: '3',
-    title: 'منحة جامعة بخاري',
-    country: 'رومانيا',
-    level: 'Bachelor, Master, PhD',
-    deadline: 'May 2026',
-    coverage: 'Fully Funded',
-    icon: <GraduationCap className="w-5 h-5" />,
-    description: 'تقدم جامعة بخاري منحاً دراسية شاملة للطلاب الدوليين الراغبين في متابعة دراساتهم العليا في مختلف التخصصات. تشمل المنحة الإقامة المجانية وراتباً شهرياً.',
-    requirements: ['شهادة التخرج السابقة', 'كشف درجات مترجم وموثق', 'شهادة لغة', 'مقابلة شخصية (لبعض التخصصات)']
-  },
-  {
-    id: '4',
-    title: 'منحة الحكومة الماليزية (MIS)',
-    country: 'ماليزيا',
-    level: 'Master, PhD',
-    deadline: 'June 2026',
-    coverage: 'Tuition + Stipend',
-    icon: <GraduationCap className="w-5 h-5" />,
-    description: 'منحة MIS الماليزية تستهدف الطلاب المبدعين من جميع أنحاء العالم لمتابعة الدراسات العليا في ماليزيا. تركز المنحة على التخصصات العلمية والتقنية.',
-    requirements: ['معدل تراكمي لا يقل عن 3.0 من 4.0', 'شهادة IELTS أو TOEFL', 'خطة بحثية (لطلاب الدكتوراه)', 'خطاب قبول من جامعة ماليزية']
-  },
-  {
-    id: '5',
-    title: 'منحة الحكومة الرومانية',
-    country: 'رومانيا',
-    level: 'Bachelor, Master, PhD',
-    deadline: 'March 2026',
-    coverage: 'Fully Funded',
-    icon: <Award className="w-5 h-5" />,
-    description: 'منحة وزارة الخارجية الرومانية هي منحة سنوية تقدم لمواطني الدول غير الأعضاء في الاتحاد الأوروبي. تغطي كافة التكاليف الدراسية والإقامة.',
-    requirements: ['جواز سفر ساري', 'شهادة الميلاد', 'الشهادات الدراسية وكشوف الدرجات', 'فحص طبي']
+import { SCHOLARSHIPS } from '../data/scholarships';
+
+const getIcon = (type: string) => {
+  switch (type) {
+    case 'globe': return <Globe className="w-5 h-5" />;
+    case 'award': return <Award className="w-5 h-5" />;
+    default: return <GraduationCap className="w-5 h-5" />;
   }
-];
+};
 
 export default function ScholarshipGrid() {
-  const [selectedScholarship, setSelectedScholarship] = useState<typeof MOCK_SCHOLARSHIPS[0] | null>(null);
+  const { user } = useAuth();
+  const [scholarships, setScholarships] = useState<any[]>([]);
+  const [selectedScholarship, setSelectedScholarship] = useState<any | null>(null);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAndSeed = async () => {
+      try {
+        let data = await getScholarships();
+        
+        // Seed if empty
+        if (data.length === 0) {
+          try {
+            const scholarshipsRef = collection(db, 'scholarships');
+            for (const s of SCHOLARSHIPS) {
+              await addDoc(scholarshipsRef, s);
+            }
+            data = await getScholarships();
+          } catch (seedError) {
+            console.warn("Seeding failed (likely not an admin), using mock data for this session.");
+            // Add IDs to mock data so they work with toggleSave
+            data = SCHOLARSHIPS.map((s, index) => ({ id: `mock-${index}`, ...s }));
+          }
+        }
+        
+        setScholarships(data);
+      } catch (error) {
+        console.error("Error in fetchAndSeed:", error);
+        setScholarships(SCHOLARSHIPS.map((s, index) => ({ id: `mock-${index}`, ...s })));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAndSeed();
+  }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setSavedIds(new Set());
+      return;
+    }
+
+    const subUnsubscribe = onSnapshot(
+      collection(db, 'users', user.uid, 'savedScholarships'),
+      (snapshot) => {
+        setSavedIds(new Set(snapshot.docs.map(doc => doc.id)));
+      }
+    );
+
+    return () => {
+      subUnsubscribe();
+    };
+  }, [user]);
+
+  const toggleSave = async (e: React.MouseEvent, scholarship: any) => {
+    e.stopPropagation();
+    if (!user) {
+      alert('الرجاء تسجيل الدخول لحفظ المنح');
+      return;
+    }
+
+    if (savedIds.has(scholarship.id)) {
+      await deleteSavedScholarship(user.uid, scholarship.id);
+    } else {
+      await saveScholarship(user.uid, scholarship);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="glass-card p-8 h-80 animate-pulse bg-white/5" />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="relative">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {MOCK_SCHOLARSHIPS.map((s) => (
+        {scholarships.map((s) => (
           <motion.div 
             key={s.id} 
             whileHover={{ y: -8 }}
@@ -74,9 +107,16 @@ export default function ScholarshipGrid() {
           >
             <div className="absolute top-0 left-0 w-1 h-full bg-brand-gold opacity-0 group-hover:opacity-100 transition-opacity" />
             
+            <button 
+              onClick={(e) => toggleSave(e, s)}
+              className="absolute top-6 left-6 z-20 p-2 rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-brand-gold hover:border-brand-gold/50 transition-all"
+            >
+              {savedIds.has(s.id) ? <BookmarkCheck className="w-5 h-5 text-brand-gold" /> : <Bookmark className="w-5 h-5" />}
+            </button>
+
             <div className="rtl relative z-10">
               <div className="w-14 h-14 rounded-2xl bg-brand-gold/10 flex items-center justify-center text-brand-gold mb-6 group-hover:scale-110 group-hover:bg-brand-gold group-hover:text-brand-deep transition-all duration-500 shadow-lg shadow-brand-gold/5">
-                {s.icon}
+                {getIcon(s.type)}
               </div>
               <h3 className="text-2xl font-black text-white mb-4 leading-tight group-hover:text-brand-gold transition-colors">{s.title}</h3>
               <div className="space-y-4 text-sm text-slate-400 font-bold">
@@ -145,7 +185,7 @@ export default function ScholarshipGrid() {
               <div className="rtl space-y-8">
                 <div className="flex items-center gap-6">
                   <div className="w-20 h-20 rounded-3xl bg-brand-gold/10 flex items-center justify-center text-brand-gold border border-brand-gold/20">
-                    {selectedScholarship.icon}
+                    {getIcon(selectedScholarship.type)}
                   </div>
                   <div>
                     <h2 className="text-3xl sm:text-4xl font-black text-white mb-2">{selectedScholarship.title}</h2>
@@ -176,7 +216,7 @@ export default function ScholarshipGrid() {
                     <h3 className="text-xl font-black">المتطلبات الأساسية</h3>
                   </div>
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {selectedScholarship.requirements.map((req, i) => (
+                    {selectedScholarship.requirements.map((req: string, i: number) => (
                       <li key={i} className="flex items-start gap-3 p-4 rounded-2xl bg-white/5 border border-white/10">
                         <div className="w-2 h-2 rounded-full bg-brand-gold mt-2 flex-shrink-0" />
                         <span className="text-slate-300 text-sm font-medium">{req}</span>
@@ -185,19 +225,32 @@ export default function ScholarshipGrid() {
                   </ul>
                 </div>
 
-                <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-3 text-slate-400">
                     <Calendar className="w-5 h-5 text-brand-gold" />
                     <span className="text-sm font-bold">الموعد النهائي: {selectedScholarship.deadline}</span>
                   </div>
-                  <a 
-                    href="https://wa.me/249117734901" 
-                    target="_blank"
-                    className="w-full sm:w-auto btn-gold flex items-center justify-center gap-3"
-                  >
-                    قدم الآن عبر واتساب
-                    <ExternalLink className="w-5 h-5" />
-                  </a>
+                  <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                    {selectedScholarship.link && (
+                      <a 
+                        href={selectedScholarship.link} 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full sm:w-auto bg-white/5 hover:bg-white/10 text-white border border-white/10 px-6 py-3 rounded-xl flex items-center justify-center gap-3 transition-all"
+                      >
+                        الموقع الرسمي
+                        <ExternalLink className="w-5 h-5" />
+                      </a>
+                    )}
+                    <a 
+                      href={`https://wa.me/249117734901?text=${encodeURIComponent(`السلام عليكم، أريد الاستفسار عن التقديم لمنحة: ${selectedScholarship.title} في ${selectedScholarship.country}. هل يمكنكم تزويدي بالتفاصيل والأسعار؟`)}`} 
+                      target="_blank"
+                      className="w-full sm:w-auto btn-gold flex items-center justify-center gap-3"
+                    >
+                      قدم عبر لينجوتك
+                      <CheckCircle className="w-5 h-5" />
+                    </a>
+                  </div>
                 </div>
               </div>
             </motion.div>
