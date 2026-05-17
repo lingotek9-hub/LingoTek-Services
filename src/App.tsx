@@ -181,8 +181,8 @@ function AppContent() {
               {/* About Us Section (Simplified in Home) */}
               <section className="py-20 md:py-24 relative overflow-hidden bg-brand-cosmic/30">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center rtl">
-                    <div className="space-y-6 md:space-y-8 text-center md:text-right">
+                  <div className="max-w-3xl mx-auto text-center rtl">
+                    <div className="space-y-6 md:space-y-8">
                       <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-brand-gold/10 border border-brand-gold/20 text-brand-gold text-xs font-bold">
                         <Info className="w-4 h-4" />
                         تعرف علينا أكثر
@@ -200,15 +200,6 @@ function AppContent() {
                           <h4 className="text-3xl md:text-4xl font-black text-brand-gold mb-1 md:mb-2">+20</h4>
                           <p className="text-xs md:text-sm font-bold text-slate-400">دولة وجهة دراسية</p>
                         </div>
-                      </div>
-                    </div>
-                    <div className="relative">
-                      <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
-                        <img 
-                          src="/src/assets/images/lingotek_team_image_1779004787301.png" 
-                          alt="LingoTek Team" 
-                          className="w-full h-auto"
-                        />
                       </div>
                     </div>
                   </div>
