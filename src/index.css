@@ -111,3 +111,52 @@
 .cyber-glow-orange {
   box-shadow: 0 0 15px rgba(255, 138, 0, 0.3);
 }
+
+/* Printing styling & layout modifiers */
+@media print {
+  /* Ensure browser prints accurate high-quality colors */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Hide normal elements, buttons, navigation tabs, footers, tooltips, and non-printable wrappers during active printer output */
+  .no-print,
+  #root > div:not(.print-content-wrapper),
+  nav,
+  footer,
+  aside,
+  button,
+  a {
+    display: none !important;
+  }
+
+  body {
+    background-color: #ffffff !important;
+    background-image: none !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Maximize usable print dimensions */
+  .print-content-wrapper {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+    font-size: 13px !important;
+  }
+
+  .print-page-break {
+    page-break-inside: avoid !important;
+  }
+}
+

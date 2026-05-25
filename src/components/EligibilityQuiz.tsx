@@ -88,6 +88,7 @@ export default function EligibilityQuiz() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
+  const [showPrintPreview, setShowPrintPreview] = useState(false);
 
   const handleOptionSelect = (optionIndex: number, optionScore: number, optionValue: any) => {
     if (isTransitioning) return;
@@ -176,485 +177,37 @@ export default function EligibilityQuiz() {
 هل يمكنكم مساعدتي في بدء التجهيز؟`);
 
   const handleDownloadPDF = () => {
-    const maxScore = QUESTIONS.reduce((acc, q) => acc + Math.max(...q.options.map(o => o.score)), 0);
-    const percentage = Math.round((finalScore / maxScore) * 100);
-    const applicantName = user?.displayName || 'مستفيد منصة لينجوتك';
-    const applicantEmail = user?.email || '-';
-    const formattedDate = new Date().toLocaleDateString('ar-EG', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      weekday: 'long'
-    });
+    setShowPrintPreview(true);
+  };
 
-    const getAnswerText = (field: string) => {
-      if (userAnswers[`${field}_text`]) {
-        return userAnswers[`${field}_text`];
-      }
-      const val = userAnswers[field];
-      const question = QUESTIONS.find(q => q.field === field);
-      if (!question) return String(val ?? 'غير محدد');
-      if (field === 'passport') {
-        return val ? 'نعم، ساري' : 'لا / غير متاح';
-      }
-      const opt = question.options.find(o => o.value === val);
-      return opt ? opt.text : String(val ?? 'غير محدد');
-    };
+  const maxScore = QUESTIONS.reduce((acc, q) => acc + Math.max(...q.options.map(o => o.score)), 0);
+  const percentage = Math.round((finalScore / maxScore) * 100);
+  const applicantName = user?.displayName || 'مستفيد منصة لينجوتك';
+  const applicantEmail = user?.email || '-';
+  const formattedDate = new Date().toLocaleDateString('ar-EG', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long'
+  });
 
-    const htmlContent = `
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <title>تقرير تقييم الأهلية للمنح الدراسية - LingoTek</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Cairo', 'Inter', sans-serif;
-      direction: rtl;
-      background-color: #ffffff;
-      color: #1e293b;
-      margin: 0;
-      padding: 30px;
-      line-height: 1.6;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
+  const getAnswerText = (field: string) => {
+    if (userAnswers[`${field}_text`]) {
+      return userAnswers[`${field}_text`];
     }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      border: 2px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 35px;
-      position: relative;
-      background: #fafcff;
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+    const val = userAnswers[field];
+    const question = QUESTIONS.find(q => q.field === field);
+    if (!question) return String(val ?? 'غير محدد');
+    if (field === 'passport') {
+      return val ? 'نعم، ساري' : 'لا / غير متاح';
     }
-    .header-border {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 8px;
-      background: linear-gradient(90deg, #1E90FF, #32D6FF, #FFD700);
-      border-top-left-radius: 14px;
-      border-top-right-radius: 14px;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid #f1f5f9;
-      padding-bottom: 20px;
-      margin-bottom: 25px;
-    }
-    .logo-text {
-      display: flex;
-      flex-direction: column;
-    }
-    .logo-title {
-      font-size: 20px;
-      font-weight: 900;
-      color: #0F2B48;
-      line-height: 1;
-      margin: 0 0 4px 0;
-    }
-    .logo-subtitle {
-      font-size: 10px;
-      font-weight: 700;
-      color: #1E90FF;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin: 0;
-    }
-    .report-badge {
-      background-color: #f1f5f9;
-      color: #334155;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: bold;
-      border: 1px solid #e2e8f0;
-    }
-    .title-area {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .title-area h1 {
-      margin: 0 0 6px 0;
-      font-size: 24px;
-      font-weight: 900;
-      color: #0f172a;
-    }
-    .title-area p {
-      margin: 0;
-      font-size: 13px;
-      color: #64748b;
-      font-weight: 600;
-    }
-    .meta-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      margin-bottom: 25px;
-      background: #ffffff;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-    }
-    .meta-item {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .meta-label {
-      font-size: 11px;
-      color: #64748b;
-      font-weight: bold;
-    }
-    .meta-value {
-      font-size: 13px;
-      color: #0f172a;
-      font-weight: 700;
-    }
-    .score-section {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      background: linear-gradient(135deg, #f0f7ff, #e0f2fe);
-      border: 1px solid #bae6fd;
-      padding: 20px;
-      border-radius: 14px;
-      margin-bottom: 30px;
-    }
-    .score-circle {
-      width: 85px;
-      height: 85px;
-      border-radius: 50%;
-      background: #ffffff;
-      border: 6px solid #1E90FF;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 10px rgba(30,144,255,0.15);
-      flex-shrink: 0;
-    }
-    .score-number {
-      font-size: 22px;
-      font-weight: 955;
-      color: #1E90FF;
-      line-height: 1;
-    }
-    .score-lbl {
-      font-size: 9px;
-      color: #64748b;
-      font-weight: bold;
-      margin-top: 2px;
-    }
-    .score-desc {
-      flex: 1;
-    }
-    .score-title {
-      font-size: 17px;
-      font-weight: 900;
-      color: #0c4a6e;
-      margin: 0 0 4px 0;
-    }
-    .score-text {
-      font-size: 12px;
-      color: #334155;
-      margin: 0;
-      line-height: 1.5;
-    }
-    .section-title {
-      font-size: 15px;
-      font-weight: 900;
-      color: #0f172a;
-      border-bottom: 2px solid #e2e8f0;
-      padding-bottom: 6px;
-      margin: 0 0 14px 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .section-title::before {
-      content: '';
-      display: inline-block;
-      width: 4px;
-      height: 16px;
-      background-color: #1E90FF;
-      border-radius: 2px;
-    }
-    .table-container {
-      margin-bottom: 30px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #ffffff;
-      border-radius: 10px;
-      overflow: hidden;
-      border: 1px solid #e2e8f0;
-    }
-    th {
-      background-color: #f8fafc;
-      text-align: right;
-      padding: 10px 14px;
-      font-size: 11px;
-      font-weight: bold;
-      color: #475569;
-      border-bottom: 2px solid #edf2f7;
-    }
-    td {
-      padding: 10px 14px;
-      font-size: 12px;
-      color: #334155;
-      border-bottom: 1px solid #f1f5f9;
-    }
-    tr:last-child td {
-      border-bottom: none;
-    }
-    .bold-value {
-      font-weight: 700;
-      color: #0f172a;
-    }
-    .badge-score {
-      background-color: #f0fdf4;
-      color: #16a34a;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 10px;
-      font-weight: bold;
-    }
-    .scholarships-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 30px;
-    }
-    .scholarship-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 14px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.01);
-    }
-    .scholarship-title {
-      font-size: 13px;
-      font-weight: 800;
-      color: #0f172a;
-      margin: 0 0 6px 0;
-    }
-    .scholarship-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    .scholarship-badge {
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 6px;
-      font-weight: bold;
-    }
-    .badge-blue { background-color: #eff6ff; color: #2563eb; }
-    .badge-gold { background-color: #fffbeb; color: #d97706; }
-    .badge-green { background-color: #f0fdf4; color: #16a34a; }
-    
-    .footer {
-      border-top: 2px solid #f1f5f9;
-      padding-top: 15px;
-      text-align: center;
-      font-size: 10px;
-      color: #94a3b8;
-      margin-top: 30px;
-    }
-    .stamp-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 20px;
-    }
-    .stamp {
-      border: 3px double #1E90FF;
-      color: #1E90FF;
-      font-size: 10px;
-      font-weight: 900;
-      padding: 4px 10px;
-      border-radius: 6px;
-      transform: rotate(-3deg);
-      opacity: 0.8;
-      text-align: center;
-      width: 130px;
-    }
-    
-    @media print {
-      body {
-        padding: 0;
-        background-color: #fff;
-      }
-      .container {
-        border: none;
-        padding: 0;
-        background: none;
-        box-shadow: none;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header-border"></div>
-    <div class="header">
-      <div class="logo-section">
-        <div class="logo-text">
-          <span class="logo-title">LingoTek - لينجوتك</span>
-          <span class="logo-subtitle">Services Platform</span>
-        </div>
-      </div>
-      <div class="report-badge">رمز التحقق: LT-${Math.floor(100000 + Math.random() * 900000)}</div>
-    </div>
-
-    <div class="title-area">
-      <h1>تقرير تقييم الأهلية للمنح الدراسية العالمية</h1>
-      <p>Scholarship Eligibility Assessment Report</p>
-    </div>
-
-    <div class="meta-grid">
-      <div class="meta-item">
-        <span class="meta-label">الاسم الكامل:</span>
-        <span class="meta-value">${applicantName}</span>
-      </div>
-      <div class="meta-item">
-        <span class="meta-label">البريد الإلكتروني:</span>
-        <span class="meta-value" style="font-family: 'Inter', sans-serif;">${applicantEmail}</span>
-      </div>
-      <div class="meta-item">
-        <span class="meta-label">تاريخ التقييم:</span>
-        <span class="meta-value">${formattedDate}</span>
-      </div>
-      <div class="meta-item">
-        <span class="meta-label">مزود التقديم:</span>
-        <span class="meta-value">منصة لينجوتك للخدمات الأكاديمية</span>
-      </div>
-    </div>
-
-    <div class="score-section">
-      <div class="score-circle">
-        <span class="score-number">%${percentage}</span>
-        <span class="score-lbl">معدل الأهلية</span>
-      </div>
-      <div class="score-desc">
-        <h3 class="score-title">${result.title}</h3>
-        <p class="score-text">${result.desc}</p>
-      </div>
-    </div>
-
-    <h2 class="section-title">بيانات الملف الشخصي والأكاديمي</h2>
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>المعيار الأكاديمي لشريكنا</th>
-            <th>الجواب المختار</th>
-            <th>نقاط القوة</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>المستوى الأكاديمي الحالي</td>
-            <td class="bold-value">${getAnswerText('level')}</td>
-            <td><span class="badge-score">+ ${userAnswers.level_score || 10} نقاط</span></td>
-          </tr>
-          <tr>
-            <td>المعدل التراكمي (GPA)</td>
-            <td class="bold-value">${getAnswerText('gpa')}</td>
-            <td><span class="badge-score">+ ${userAnswers.gpa_score || 0} نقطة</span></td>
-          </tr>
-          <tr>
-            <td>الجنس</td>
-            <td class="bold-value">${getAnswerText('gender')}</td>
-            <td><span class="badge-score">+ ${userAnswers.gender_score || 10} نقاط</span></td>
-          </tr>
-          <tr>
-            <td>شهادة اللغة الإنجليزية (IELTS/TOEFL)</td>
-            <td class="bold-value">${getAnswerText('language')}</td>
-            <td><span class="badge-score">+ ${userAnswers.language_score || 0} نقطة</span></td>
-          </tr>
-          <tr>
-            <td>جواز سفر ساري المفعول</td>
-            <td class="bold-value">${getAnswerText('passport')}</td>
-            <td><span class="badge-score">+ ${userAnswers.passport_score || 0} نقطة</span></td>
-          </tr>
-          <tr>
-            <td>القدرة المالية وتغطية التكاليف</td>
-            <td class="bold-value">${getAnswerText('budget')}</td>
-            <td><span class="badge-score">+ ${userAnswers.budget_score || 0} نقطة</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <h2 class="section-title">أقوى المنح الدراسية المرشحة لملفك</h2>
-    <div class="scholarships-grid">
-      ${result.recommendations.map(rec => `
-        <div class="scholarship-card">
-          <h3 class="scholarship-title">${rec.title}</h3>
-          <div class="scholarship-meta">
-            <span class="scholarship-badge badge-blue">${rec.country}</span>
-            <span class="scholarship-badge badge-gold">${rec.level}</span>
-            <span class="scholarship-badge badge-green">${rec.coverage}</span>
-          </div>
-        </div>
-      `).join('')}
-    </div>
-
-    <div class="stamp-container">
-      <div>
-        <p style="font-size: 11px; color: #64748b; margin: 0;">منصة لينجوتك الذكية للتقييم الأكاديمي</p>
-        <p style="font-size: 12px; font-weight: bold; color: #0f172a; margin: 4px 0 0 0;">معتمد بالكامل رقمياً</p>
-      </div>
-      <div class="stamp">
-        LingoTek Verified<br>جاهز للتقديم الدولي
-      </div>
-    </div>
-
-    <div class="footer">
-      <p>© 2026 منصة لينجوتك للخدمات الأكاديمية والمنح العالمية. جميع الحقوق محفوظة.</p>
-    </div>
-  </div>
-</body>
-</html>
-    `;
-
-    const printIframe = document.createElement('iframe');
-    printIframe.style.position = 'fixed';
-    printIframe.style.right = '0';
-    printIframe.style.bottom = '0';
-    printIframe.style.width = '0';
-    printIframe.style.height = '0';
-    printIframe.style.border = '0';
-    document.body.appendChild(printIframe);
-
-    const iframeDoc = printIframe.contentWindow?.document || printIframe.contentDocument;
-    if (iframeDoc) {
-      iframeDoc.open();
-      iframeDoc.write(htmlContent);
-      iframeDoc.close();
-
-      setTimeout(() => {
-        printIframe.contentWindow?.focus();
-        printIframe.contentWindow?.print();
-        setTimeout(() => {
-          document.body.removeChild(printIframe);
-        }, 1000);
-      }, 1000);
-    }
+    const opt = question.options.find(o => o.value === val);
+    return opt ? opt.text : String(val ?? 'غير محدد');
   };
 
   return (
     <div className="max-w-3xl mx-auto py-12 px-4 rtl">
-      <div className="glass-card p-8 md:p-12 relative overflow-hidden border-brand-gold/10">
+      <div className="glass-card p-8 md:p-12 relative overflow-hidden border-brand-gold/10 no-print">
         <div className="absolute top-0 left-0 w-full h-1.5 bg-white/5">
           <motion.div 
             className="h-full bg-gradient-to-r from-brand-gold to-yellow-200 shadow-[0_0_10px_rgba(255,215,0,0.5)]"
@@ -680,7 +233,7 @@ export default function EligibilityQuiz() {
                   {currentStep > 0 && (
                     <button 
                       onClick={() => setCurrentStep(currentStep - 1)}
-                      className="p-2 rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-brand-gold hover:border-brand-gold/50 transition-all"
+                      className="p-2 rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-brand-gold hover:border-brand-gold/50 transition-all cursor-pointer"
                     >
                       <ArrowRight className="w-4 h-4" />
                     </button>
@@ -702,7 +255,7 @@ export default function EligibilityQuiz() {
                     whileTap={!isTransitioning ? { scale: 0.98 } : {}}
                     onClick={() => handleOptionSelect(i, opt.score, opt.value)}
                     disabled={isTransitioning}
-                    className={`group flex items-center justify-between p-5 rounded-2xl border transition-all text-right ${
+                    className={`group flex items-center justify-between p-5 rounded-2xl border transition-all text-right cursor-pointer ${
                       selectedOption === i 
                         ? 'border-brand-gold bg-brand-gold/10 shadow-[0_0_15px_rgba(255,215,0,0.2)]' 
                         : 'bg-white/5 border-white/10 hover:border-brand-gold/50 hover:bg-brand-gold/5'
@@ -722,7 +275,7 @@ export default function EligibilityQuiz() {
                       </AnimatePresence>
                       <span className={`text-lg font-bold transition-colors ${
                         selectedOption === i ? 'text-brand-gold' : 'text-slate-200 group-hover:text-brand-gold'
-                      }`}>
+                       }`}>
                         {opt.text}
                       </span>
                     </div>
@@ -769,7 +322,7 @@ export default function EligibilityQuiz() {
 
               <div className="pt-8 border-t border-white/10 space-y-6">
                 {!user && (
-                  <p className="text-slate-400 text-sm mb-2">سجل دخولك لحفظ هذه النتيجة في ملفك الشخصي</p>
+                    <p className="text-slate-400 text-sm mb-2">سجل دخولك لحفظ هذه النتيجة في ملفك الشخصي</p>
                 )}
                 <p className="text-brand-gold font-bold mb-4">تواصل معنا الآن لتحليل ملفك مجاناً وبدء التقديم</p>
                 
@@ -778,6 +331,7 @@ export default function EligibilityQuiz() {
                     href={`https://wa.me/249117734901?text=${whatsappMsg}`} 
                     target="_blank"
                     className="btn-gold inline-flex items-center gap-3 w-full sm:w-auto justify-center"
+                    rel="noreferrer"
                   >
                     تواصل عبر واتساب الآن
                     <ArrowLeft className="w-5 h-5" />
@@ -786,7 +340,7 @@ export default function EligibilityQuiz() {
                     onClick={handleDownloadPDF}
                     className="cursor-pointer inline-flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl bg-transparent border-2 border-brand-gold text-brand-gold font-bold hover:bg-brand-gold/10 transition-colors w-full sm:w-auto"
                   >
-                    تحميل النتيجة (PDF)
+                    عرض النتيجة والطباعة (PDF)
                     <Download className="w-5 h-5" />
                   </button>
                 </div>
@@ -794,7 +348,7 @@ export default function EligibilityQuiz() {
               
               <button 
                 onClick={() => { setCurrentStep(0); setFinalScore(0); setUserAnswers({}); setShowResult(false); }}
-                className="text-slate-500 text-sm hover:text-brand-gold transition-colors"
+                className="text-slate-500 text-sm hover:text-brand-gold transition-colors cursor-pointer"
               >
                 إعادة الاختبار
               </button>
@@ -802,6 +356,206 @@ export default function EligibilityQuiz() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Extreme Visual-Quality Academic PDF Report Preview Overlay (Compatible with iOS, Android & Desktop) */}
+      {showPrintPreview && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/95 backdrop-blur-md flex flex-col items-center p-4 md:p-8 no-print rtl">
+          
+          {/* Dashboard Control Sticky Panel (Only shown on screen, cleanly removed during print) */}
+          <div className="w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl p-4 mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between no-print shadow-2xl relative z-20">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-brand-cyan/15 flex items-center justify-center border border-brand-cyan/25">
+                <Printer className="w-6 h-6 text-[#32D6FF] animate-pulse" />
+              </div>
+              <div className="text-right">
+                <h4 className="text-white font-black text-base">معاينة التقرير الأكاديمي الرقمي</h4>
+                <p className="text-xs text-slate-400">انقر على زر الطباعة لحفظ التقرير كملف PDF ملون عالي الدقة</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <button
+                onClick={() => window.print()}
+                className="cursor-pointer flex-1 sm:flex-initial bg-gradient-to-tr from-[#1E90FF] to-[#32D6FF] hover:brightness-110 text-white font-black px-6 py-3 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2"
+              >
+                <Printer className="w-5 h-5" />
+                <span>حفظ وطباعة كـ PDF</span>
+              </button>
+              <button
+                onClick={() => setShowPrintPreview(false)}
+                className="cursor-pointer flex-1 sm:flex-initial bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-200 font-bold px-5 py-3 rounded-2xl transition-colors text-center"
+              >
+                إغلاق
+              </button>
+            </div>
+          </div>
+
+          {/* Golden border luxury document layout (Becomes primary print page with absolute zero layout shifts) */}
+          <div className="print-content-wrapper w-full max-w-4xl bg-white text-slate-800 p-8 md:p-14 rounded-3xl shadow-2xl relative border-2 border-slate-200 overflow-visible">
+            
+            {/* Top decorative gradient bar */}
+            <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#1E90FF] via-[#32D6FF] to-[#FF8A00] rounded-t-3xl print:rounded-none" />
+
+            {/* Document Header block */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b-2 border-slate-100 pb-6 mb-8 gap-4">
+              <div className="text-right">
+                <h1 className="text-2xl md:text-3xl font-black text-[#071B34] tracking-tight leading-none mb-1">
+                  لينجوتك <span className="text-[#1E90FF]">LingoTek</span>
+                </h1>
+                <p className="text-[10px] font-black text-[#1E90FF] tracking-wider uppercase">بوابة المنح الأكاديمية والخدمات الشاملة</p>
+              </div>
+              <div className="bg-slate-100/90 text-slate-600 px-4 py-2.5 rounded-2xl text-xs font-bold border border-slate-200">
+                رمز التحقق الدولي: <span className="font-mono font-bold text-slate-800">LT-{Math.floor(118500 + Math.random() * 880000)}</span>
+              </div>
+            </div>
+
+            {/* Document Core Title */}
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-black text-slate-900 mb-2">تقرير تقييم الأهلية وخارطة الطريق الأكاديمية</h2>
+              <p className="text-xs text-slate-500 font-bold uppercase tracking-wide">Scholarship Eligibility Assessment & Matching Index</p>
+              <div className="w-24 h-1 bg-gradient-to-r from-[#32D6FF] to-[#1E90FF] mx-auto mt-4 rounded-full" />
+            </div>
+
+            {/* Student Metadata Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/70 border border-slate-100 rounded-2xl p-5 mb-8">
+              <div className="flex flex-col gap-1 text-right">
+                <span className="text-[10px] font-bold text-slate-400">الاسم الكامل للمستفيد:</span>
+                <span className="text-sm font-black text-slate-900">{applicantName}</span>
+              </div>
+              <div className="flex flex-col gap-1 text-right">
+                <span className="text-[10px] font-bold text-slate-400">البريد الإلكتروني المعتمد:</span>
+                <span className="text-sm font-bold text-slate-800 font-mono">{applicantEmail}</span>
+              </div>
+              <div className="flex flex-col gap-1 text-right">
+                <span className="text-[10px] font-bold text-slate-400">تاريخ إصدار الفحص:</span>
+                <span className="text-sm font-bold text-slate-900">{formattedDate}</span>
+              </div>
+              <div className="flex flex-col gap-1 text-right">
+                <span className="text-[10px] font-bold text-slate-400">حالة الفحص والمصادقة:</span>
+                <span className="text-xs font-black text-emerald-600 flex items-center justify-end gap-1">
+                  <span>معتمد رقمياً ومصنف للأهلية الدولية</span>
+                  <CheckCircle2 className="w-4 h-4" />
+                </span>
+              </div>
+            </div>
+
+            {/* Beautiful Diagnostic Core Score Widget */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch mb-8 bg-gradient-to-b from-[#f0f7ff] to-white border-2 border-[#1E90FF]/25 p-6 rounded-3xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#32D6FF]/10 rounded-full blur-2xl pointer-events-none" />
+              
+              {/* Score Circular Badge */}
+              <div className="flex flex-col items-center justify-center bg-white border border-[#1E90FF]/30 p-5 rounded-2xl md:col-span-1 shadow-md">
+                <div className="w-24 h-24 rounded-full border-[6px] border-[#1E90FF] flex flex-col items-center justify-center shadow-inner">
+                  <span className="text-3xl font-black text-[#1E90FF] leading-none">%{percentage}</span>
+                  <p className="text-[9px] font-bold text-slate-400 mt-1">معدل التوافق</p>
+                </div>
+              </div>
+
+              {/* Score Assessment review */}
+              <div className="flex flex-col justify-center text-right md:col-span-2 space-y-2">
+                <span className="text-[11px] font-black text-[#1E90FF] uppercase tracking-wider block bg-[#1E90FF]/10 px-3 py-1 rounded-lg w-max">
+                  {result.title}
+                </span>
+                <h3 className="text-lg font-black text-slate-900">تشخيص المستشار الدراسي الذكي</h3>
+                <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                  {result.desc}
+                </p>
+              </div>
+            </div>
+
+            {/* Core Criteria evaluation table */}
+            <h3 className="text-base font-black text-slate-900 mb-4 flex items-center gap-2 justify-end">
+              <span>تفاصيل مراجعة المعايير والمؤشرات الأكاديمية</span>
+              <span className="w-1.5 h-6 bg-[#1E90FF] rounded-full inline-block" />
+            </h3>
+            
+            <div className="overflow-hidden border border-slate-100 rounded-2xl mb-8">
+              <table className="w-full text-right border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100">
+                    <th className="p-4 text-xs font-black text-slate-600">المعيار المطلوب للمنح</th>
+                    <th className="p-4 text-xs font-black text-slate-600">بيانات ملفك المدخلة</th>
+                    <th className="p-4 text-xs font-black text-slate-600 text-left">قوة القبول الممنوحة</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  <tr>
+                    <td className="p-4 text-xs font-black text-slate-800">المستوى الأكاديمي الحالي</td>
+                    <td className="p-4 text-xs text-slate-700 font-bold">{getAnswerText('level')}</td>
+                    <td className="p-4 text-xs text-emerald-600 font-black text-left">+{userAnswers.level_score || 10} نقطة توافق</td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 text-xs font-black text-slate-800">المعدل التراكمي (GPA)</td>
+                    <td className="p-4 text-xs text-slate-700 font-bold">{getAnswerText('gpa')}</td>
+                    <td className="p-4 text-xs text-emerald-600 font-black text-left">+{userAnswers.gpa_score || 0} نقطة توافق</td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 text-xs font-black text-slate-800">جنس المتقدم</td>
+                    <td className="p-4 text-xs text-slate-700 font-bold">{getAnswerText('gender')}</td>
+                    <td className="p-4 text-xs text-emerald-600 font-black text-left">+{userAnswers.gender_score || 10} نقطة توافق</td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 text-xs font-black text-slate-800">شهادة كفاءة الإنجليزية</td>
+                    <td className="p-4 text-xs text-slate-700 font-bold">{getAnswerText('language')}</td>
+                    <td className="p-4 text-xs text-emerald-600 font-black text-left">+{userAnswers.language_score || 0} نقطة توافق</td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 text-xs font-black text-slate-800">جواز سفر ساري المفعول</td>
+                    <td className="p-4 text-xs text-slate-700 font-bold">{getAnswerText('passport')}</td>
+                    <td className="p-4 text-xs text-emerald-600 font-black text-left">+{userAnswers.passport_score || 0} نقطة توافق</td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 text-xs font-black text-slate-800">القدرة المالية والتمويل للرحلة</td>
+                    <td className="p-4 text-xs text-slate-700 font-bold">{getAnswerText('budget')}</td>
+                    <td className="p-4 text-xs text-emerald-600 font-black text-left">+{userAnswers.budget_score || 0} نقطة توافق</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Targeted Recommended Scholarships Grid list */}
+            <h3 className="text-base font-black text-slate-900 mb-4 flex items-center gap-2 justify-end">
+              <span>توصيات المنح الدولية الأعلى توافقاً مع ملفك</span>
+              <span className="w-1.5 h-6 bg-[#1E90FF] rounded-full inline-block" />
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+              {result.recommendations.map((rec, idx) => (
+                <div key={idx} className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-col text-right">
+                  <h4 className="text-xs font-black text-slate-900 mb-3">{rec.title}</h4>
+                  <div className="flex flex-wrap gap-2 justify-end mt-auto">
+                    <span className="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg text-[9px] font-extrabold border border-emerald-100">{rec.coverage}</span>
+                    <span className="bg-amber-50 text-amber-700 px-2.5 py-1 rounded-lg text-[9px] font-extrabold border border-amber-100">{rec.level}</span>
+                    <span className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg text-[9px] font-extrabold border border-blue-100">{rec.country}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Credential Stamps and Validation Footer */}
+            <div className="flex flex-col sm:flex-row justify-between items-center border-t border-slate-100 pt-8 mt-12 gap-6">
+              <div className="text-right">
+                <p className="text-[10px] font-bold text-slate-400">منصة لينجوتك للخدمات الأكاديمية والاستشارات للمنح العالمية</p>
+                <p className="text-xs font-black text-slate-800 mt-1">وثيقة أهلية رقمية تلقائية معتمدة بالكامل بنظام لينجوتك الذكي</p>
+              </div>
+              <div className="flex items-center gap-4">
+                {/* Official Stamp */}
+                <div className="border-[3px] border-double border-[#1E90FF] text-[#1E90FF] font-black px-4 py-2.5 rounded-2xl rotate-[-4deg] opacity-90 text-center w-40 select-none">
+                  <div className="text-[11px] uppercase tracking-widest font-black">LingoTek Verified</div>
+                  <div className="text-[9px] font-black mt-0.5">جاهز للتقديم الدولي</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Print copyright footer */}
+            <div className="text-center text-[9px] text-slate-400 pt-8 mt-6 border-t border-slate-50">
+              جميع الحقوق محفوظة © 2026 منصة لينجوتك للخدمات الأكاديمية والمنح العالمية.
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
