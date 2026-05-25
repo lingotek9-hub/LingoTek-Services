@@ -2,75 +2,83 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-cosmic: #0B0E2C;
-  --color-brand-deep: #05071A;
-  --color-brand-gold: #FFD700;
-  --color-brand-gold-muted: #B8860B;
-  --color-brand-accent: #7B61FF;
+  --color-brand-cosmic: #071B34;
+  --color-brand-deep: #030F1F;
+  --color-brand-gold: #32D6FF; /* Main cyber bright cyan */
+  --color-brand-gold-muted: #1E90FF; /* Electric blue */
+  --color-brand-accent: #1E90FF; /* Electric Blue */
+  --color-brand-electric: #1E90FF;
+  --color-brand-cyan: #32D6FF;
+  --color-brand-orange: #FF8A00;
   --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
   body {
-    @apply bg-brand-deep text-slate-100 antialiased transition-colors duration-300;
+    @apply bg-brand-deep text-slate-100 antialiased transition-colors duration-300 overflow-x-hidden;
     font-family: var(--font-sans);
-  }
-
-  body.light {
-    @apply bg-slate-50 text-slate-900;
+    background-color: #030F1F;
   }
 }
 
+/* Glassmorphism cyber styles */
 .glass-card {
-  @apply bg-brand-cosmic/40 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl transition-all;
+  @apply bg-brand-cosmic/40 backdrop-blur-xl border border-[#1E90FF]/25 rounded-3xl shadow-2xl transition-all duration-300;
+  box-shadow: 0 8px 32px 0 rgba(7, 27, 52, 0.37);
 }
 
-.light .glass-card {
-  @apply bg-white border-slate-200 shadow-xl;
+.glass-card:hover {
+  @apply border-[#32D6FF]/45;
+  box-shadow: 0 0 20px rgba(30, 144, 255, 0.15);
 }
 
-.light .text-slate-400 {
-  @apply text-slate-600;
+.glass-nav {
+  @apply bg-[#030F1F]/70 backdrop-blur-md border-b border-[#1E90FF]/15;
 }
 
-.light .text-white {
-  @apply text-slate-900;
+/* Neon glow texts & buttons */
+.neon-text-cyan {
+  text-shadow: 0 0 8px rgba(50, 214, 255, 0.61), 0 0 20px rgba(50, 214, 255, 0.3);
 }
 
-.light .bg-brand-deep {
-  @apply bg-slate-100;
+.neon-text-blue {
+  text-shadow: 0 0 8px rgba(30, 144, 255, 0.61), 0 0 20px rgba(30, 144, 255, 0.3);
 }
 
-.light .bg-brand-cosmic\/20 {
-  @apply bg-slate-200/50;
-}
-
-.light .bg-brand-cosmic\/30 {
-  @apply bg-slate-200/80;
-}
-
-.light .bg-white\/5 {
-  @apply bg-slate-200;
-}
-
-.light .border-white\/10 {
-  @apply border-slate-300;
-}
-
-.light .cosmic-gradient {
-  @apply bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200;
-}
-
-.gold-gradient {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-gold via-yellow-200 to-brand-gold;
-}
-
-.cosmic-gradient {
-  @apply bg-gradient-to-br from-brand-cosmic via-brand-deep to-black;
+.neon-text-orange {
+  text-shadow: 0 0 8px rgba(255, 138, 0, 0.61), 0 0 20px rgba(255, 138, 0, 0.3);
 }
 
 .btn-gold {
-  @apply bg-brand-gold text-brand-deep font-black px-8 py-4 rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-lg shadow-brand-gold/20;
+  @apply bg-[#1E90FF] text-white font-black px-8 py-4 rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl;
+  box-shadow: 0 4px 14px rgba(30, 144, 255, 0.4);
+  background: linear-gradient(135deg, #1E90FF 0%, #32D6FF 100%);
+}
+
+.btn-gold:hover {
+  box-shadow: 0 0 25px rgba(50, 214, 255, 0.6);
+}
+
+.btn-orange {
+  @apply bg-[#FF8A00] text-white font-black px-8 py-4 rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl;
+  box-shadow: 0 4px 14px rgba(255, 138, 0, 0.4);
+  background: linear-gradient(135deg, #FF8A00 0%, #FFA500 100%);
+}
+
+.btn-orange:hover {
+  box-shadow: 0 0 25px rgba(255, 138, 0, 0.6);
+}
+
+.gold-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-[#32D6FF] via-[#1E90FF] to-[#FF8A00];
+}
+
+.cyber-gradient {
+  background: linear-gradient(135deg, #071B34 0%, #030F1F 100%);
+}
+
+.cosmic-gradient {
+  background: radial-gradient(circle at 50% 50%, #071B34 0%, #030F1F 100%);
 }
 
 .rtl {
@@ -82,11 +90,24 @@
 }
 
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(1deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
 }
 
 .animate-float {
-  animation: float 3s ease-in-out infinite;
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Glow Borders */
+.cyber-glow-blue {
+  box-shadow: 0 0 15px rgba(30, 144, 255, 0.4);
+}
+
+.cyber-glow-cyan {
+  box-shadow: 0 0 15px rgba(50, 214, 255, 0.4);
+}
+
+.cyber-glow-orange {
+  box-shadow: 0 0 15px rgba(255, 138, 0, 0.3);
 }
