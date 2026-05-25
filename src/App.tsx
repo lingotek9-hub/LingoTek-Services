@@ -4,7 +4,8 @@ import {
   Globe, MessageCircle, ArrowRight, ShieldCheck, Info, MapPin, Phone, Mail, 
   Users, Menu, X, Sparkles, Facebook, Send, MessageSquare, LogIn, 
   User as UserIcon, Award, Laptop, Key, RefreshCw, SendHorizontal, 
-  ExternalLink, Building, CheckCircle, Compass, CheckCircle2, ChevronLeft, Star 
+  ExternalLink, Building, CheckCircle, Compass, CheckCircle2, ChevronLeft, Star,
+  GraduationCap
 } from 'lucide-react';
 import ScholarshipGrid from './components/ScholarshipGrid';
 import EligibilityQuiz from './components/EligibilityQuiz';
@@ -109,14 +110,14 @@ function AppContent() {
                 onClick={() => setCurrentView('home')}
                 className="flex items-center gap-3 text-right group cursor-pointer"
               >
-                <div className="w-14 h-14 flex items-center justify-center group-hover:scale-110 transition-transform overflow-visible relative">
-                  <div className="absolute inset-1.5 bg-gradient-to-tr from-[#1E90FF]/30 to-[#32D6FF]/30 rounded-full blur-md" />
-                  <img 
-                    src="/src/assets/images/lingo_mascot_1779702808746.png" 
-                    alt="LingoTek Mascot Logo" 
-                    className="w-full h-full object-contain relative z-10 filter drop-shadow-[0_0_8px_rgba(50,214,255,0.6)] animate-float"
-                    referrerPolicy="no-referrer"
-                  />
+                <div className="w-12 h-12 flex items-center justify-center group-hover:scale-110 transition-transform overflow-visible relative">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-[#1E90FF]/25 to-[#32D6FF]/25 rounded-xl blur-md opacity-80 group-hover:opacity-100 transition-opacity" />
+                  <div className="w-full h-full rounded-2xl bg-gradient-to-b from-[#0F2B48] to-[#071B34] border border-[#1E90FF]/40 flex items-center justify-center relative z-10 shadow-[0_4px_15px_rgba(30,144,255,0.2)] group-hover:border-[#32D6FF] transition-colors">
+                    <div className="relative w-7 h-7 flex items-center justify-center">
+                      <Globe className="w-7 h-7 text-[#32D6FF] absolute opacity-30 animate-pulse" />
+                      <GraduationCap className="w-6 h-6 text-white relative z-10 drop-shadow-[0_0_10px_rgba(50,214,255,0.7)]" />
+                    </div>
+                  </div>
                 </div>
                 <div className="flex flex-col rtl text-right">
                   <span className="text-xl md:text-2.5xl font-black text-white group-hover:text-[#32D6FF] transition-colors leading-none mb-1">لينجوتك</span>
@@ -328,14 +329,29 @@ function AppContent() {
                         {/* Laptop base */}
                         <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[110%] h-3 bg-[#030F1F] rounded-b-xl border border-t-0 border-[#32D6FF]/35" />
 
-                        /* Mascot Image Rendered Beside */
-                        <div className="absolute -top-28 -left-12 sm:-left-20 w-36 sm:w-48 h-36 sm:h-48 z-40 animate-float pointer-events-auto">
-                          <img 
-                            src="/src/assets/images/lingo_mascot_1779702808746.png" 
-                            alt="Lingo Mascot" 
-                            className="w-full h-full object-contain filter drop-shadow-[0_0_15px_rgba(50,214,255,0.4)]"
-                            title="لينغو - مستشار المنح الذكي"
-                          />
+                        {/* Interactive floating Lingo Smart Adviser Widget built of pure icons */}
+                        <div className="absolute -top-24 -left-8 sm:-left-16 z-40 animate-float pointer-events-auto select-none">
+                          <div className="relative group/mascot flex flex-col items-center">
+                            {/* Glowing rings */}
+                            <div className="absolute top-0 w-24 h-24 sm:w-28 sm:h-28 bg-[#32D6FF]/15 rounded-full filter blur-xl animate-pulse" />
+                            
+                            {/* Smart Assistant Avatar */}
+                            <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-[#0F2B48] via-[#071B34] to-[#1E90FF]/30 border-2 border-[#32D6FF] flex items-center justify-center relative shadow-[0_0_20px_rgba(50,214,255,0.3)] group-hover/mascot:border-white transition-colors duration-300">
+                              <div className="absolute -inset-1 rounded-full border border-dashed border-[#32D6FF]/40 animate-spin" style={{ animationDuration: '12s' }} />
+                              <div className="text-[#32D6FF] group-hover/mascot:scale-110 transition-transform duration-300">
+                                <Sparkles className="w-8 h-8 sm:w-11 sm:h-11 animate-pulse relative z-10" />
+                              </div>
+                              <div className="absolute -top-2 -right-1 bg-[#1E90FF] text-white p-1 rounded-lg border border-[#32D6FF]/40 shadow-lg rotate-[15deg]">
+                                <GraduationCap className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
+                              </div>
+                            </div>
+                            
+                            {/* Message Bubble */}
+                            <div className="mt-2 bg-[#0C2442]/95 border border-[#1E90FF]/35 px-3 py-1 rounded-xl shadow-lg relative text-center max-w-[110px] sm:max-w-[130px]">
+                              <div className="absolute -top-1 w-2 h-2 bg-[#0C2442] border-t border-l border-[#1E90FF]/35 rotate-45 left-1/2 -translate-x-1/2" />
+                              <p className="text-[9px] sm:text-[10px] font-black text-[#32D6FF] animate-pulse">لينغو متاح للمساعدة!</p>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
@@ -762,14 +778,14 @@ function AppContent() {
             
             <div className="space-y-5">
               <div className="flex items-center gap-3 justify-end md:justify-start">
-                <div className="w-14 h-14 flex items-center justify-center overflow-visible relative">
-                  <div className="absolute inset-1.5 bg-gradient-to-tr from-[#1E90FF]/25 to-[#32D6FF]/25 rounded-full blur-md" />
-                  <img 
-                    src="/src/assets/images/lingo_mascot_1779702808746.png" 
-                    alt="LingoTek Mascot Logo" 
-                    className="w-full h-full object-contain relative z-10 filter drop-shadow-[0_0_8px_rgba(50,214,255,0.5)] animate-float"
-                    referrerPolicy="no-referrer"
-                  />
+                <div className="w-12 h-12 flex items-center justify-center overflow-visible relative">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-[#1E90FF]/20 to-[#32D6FF]/20 rounded-xl blur-md opacity-80" />
+                  <div className="w-full h-full rounded-2xl bg-gradient-to-b from-[#0F2B48] to-[#071B34] border border-[#1E90FF]/35 flex items-center justify-center relative z-10 shadow-[0_4px_15px_rgba(30,144,255,0.15)]">
+                    <div className="relative w-6 h-6 flex items-center justify-center">
+                      <Globe className="w-6 h-6 text-[#32D6FF] absolute opacity-30 animate-pulse" />
+                      <GraduationCap className="w-5 h-5 text-white relative z-10 drop-shadow-[0_0_8px_rgba(50,214,255,0.6)]" />
+                    </div>
+                  </div>
                 </div>
                 <div className="flex flex-col text-right">
                   <span className="text-xl md:text-2xl font-black text-white leading-none mb-1 text-glow-cyan">LingoTek</span>
