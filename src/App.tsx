@@ -109,11 +109,12 @@ function AppContent() {
                 onClick={() => setCurrentView('home')}
                 className="flex items-center gap-3 text-right group cursor-pointer"
               >
-                <div className="w-12 h-12 flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden">
+                <div className="w-14 h-14 flex items-center justify-center group-hover:scale-110 transition-transform overflow-visible relative">
+                  <div className="absolute inset-1.5 bg-gradient-to-tr from-[#1E90FF]/30 to-[#32D6FF]/30 rounded-full blur-md" />
                   <img 
-                    src="/src/assets/images/lingotek_logo_black_bg_1779704242352.png" 
-                    alt="LingoTek Services Platform" 
-                    className="w-full h-full object-contain mix-blend-screen filter brightness-110"
+                    src="/src/assets/images/lingo_mascot_1779702808746.png" 
+                    alt="LingoTek Mascot Logo" 
+                    className="w-full h-full object-contain relative z-10 filter drop-shadow-[0_0_8px_rgba(50,214,255,0.6)] animate-float"
                     referrerPolicy="no-referrer"
                   />
                 </div>
@@ -761,16 +762,17 @@ function AppContent() {
             
             <div className="space-y-5">
               <div className="flex items-center gap-3 justify-end md:justify-start">
-                <div className="w-12 h-12 flex items-center justify-center overflow-hidden">
+                <div className="w-14 h-14 flex items-center justify-center overflow-visible relative">
+                  <div className="absolute inset-1.5 bg-gradient-to-tr from-[#1E90FF]/25 to-[#32D6FF]/25 rounded-full blur-md" />
                   <img 
-                    src="/src/assets/images/lingotek_logo_black_bg_1779704242352.png" 
-                    alt="LingoTek Services Platform" 
-                    className="w-full h-full object-contain mix-blend-screen filter brightness-110"
+                    src="/src/assets/images/lingo_mascot_1779702808746.png" 
+                    alt="LingoTek Mascot Logo" 
+                    className="w-full h-full object-contain relative z-10 filter drop-shadow-[0_0_8px_rgba(50,214,255,0.5)] animate-float"
                     referrerPolicy="no-referrer"
                   />
                 </div>
                 <div className="flex flex-col text-right">
-                  <span className="text-xl md:text-2xl font-black text-white leading-none mb-1">LingoTek</span>
+                  <span className="text-xl md:text-2xl font-black text-white leading-none mb-1 text-glow-cyan">LingoTek</span>
                   <span className="text-[9px] font-black text-slate-400 tracking-wider">Services Platform</span>
                 </div>
               </div>
